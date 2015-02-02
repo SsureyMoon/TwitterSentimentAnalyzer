@@ -1,0 +1,18 @@
+h1 {
+    color:blue;
+    font-family:verdana;
+    font-size:300%;
+}
+.form_view {
+    margin: 10px 0px 20px 10px;
+}
+
+.keyword_box {
+    margin: 10px 10px 10px 10px;
+}
+
+p  {
+    color:black;
+    font-family:courier;
+    font-size:160%;
+}

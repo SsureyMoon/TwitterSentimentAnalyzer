@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Twitter sentiment analysis</title>
+	<link rel="stylesheet" href='/static/style.css'/>
+	<!--<link rel="stylesheet" href='./style.css'/>-->
+</head>
+<body>
+	<div>
+		<%-no_session%>/1
+		<%=message%>
+	</div>
+	<!--<h2>Real-time Twitter sentiment catcher.</h2>-->
+	<div class="form_view">
+		<form name="keyword" role="form" method="post">
+			<legend>Enter a keyword you want to search for</legend>
+			<div class="keyword_box">
+				<input type="text" placeholder="Keyword" name="keyword"/>
+				<input type="submit" value="Submit"/>
+			</div>	
+			
+		</form>
+	</div>
+
+	
+
+	<script src="/socket.io/socket.io.js"></script>
+	<script src="/static/jQuery.js"></script>
+</body>
+</html>

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Twitter sentiment analysis</title>
+	<link rel="stylesheet" href='/static/style.css'/>
+	<!--<link rel="stylesheet" href='./style.css'/>-->
+</head>
+<body>
+	<div>
+		Searching and anlaysing tweets with <%=keyword%>.<br>
+	</div>
+	<!--<h2>Real-time Twitter sentiment catcher.</h2>-->
+
+	<div id='graph_window'></div>
+
+	Session will be expired after
+	<div id='counter'>0/100 tweets </div>
+	<div id='timer'> or 0/120 seconds.</div> 
+	
+	
+	<ul class='block-list'></ul>
+
+
+	
+
+	<script src="/socket.io/socket.io.js"></script>
+	<script src="/static/jQuery.js"></script>
+	<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+	<!--<script src="d3.min.js"></script>-->
+	<script src="/static/draw.js"></script>
+	<script src="/static/client.js"></script>
+</body>
+</html>
