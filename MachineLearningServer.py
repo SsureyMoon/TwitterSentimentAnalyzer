@@ -28,10 +28,7 @@ import numpy as np
 
 json = import_simplejson()
 
-ckey = ''
-csecret = ''
-atoken = ''
-asecret = ''
+
 
 
 

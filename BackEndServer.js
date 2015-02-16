@@ -36,7 +36,7 @@ var number_of_Session = 0
 var sessionID;
 
 
-//limit the number of valid session
+
 var limit_session = function(request, response, next){
 
 	if(!request.session.connection){
@@ -84,7 +84,15 @@ app.get('/', sessions, limit_session, function(request, response){
 	console.log("sessionID: ", request.sessionID)
 	console.log("number_of_Session: "+number_of_Session);
 	console.log("connection success.\n")
-	setTimeout(function() {number_of_Session = 0; request.session.connection = false}, 1000*150);
+	setTimeout(function() {number_of_Session = 0;
+		request.session.connection = false;
+		try{
+			io.sockets.emit('end_', "data");
+			child.kill(signal='SIGTERM');
+		} catch (e){
+			console.log("Node.js error:");
+			console.log(e);
+		}}, 1000*150);
 	return response.render(__dirname +'/public/index.ejs', {"message": "connection success", "no_session":number_of_Session})
 
 });

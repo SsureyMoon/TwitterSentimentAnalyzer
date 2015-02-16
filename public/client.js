@@ -8,9 +8,6 @@ $(function(){
 		var i = 0;
 
 		return function(){
-			console.log("i:" + i);
-			console.log("seconds:" + seconds);
-
 
 			if(i===seconds){
 
@@ -38,7 +35,8 @@ $(function(){
 
 	var setInt  = setInterval(countTime, 1000);//calls every seconds
 	
-	var socket = io.connect('http://localhost:8080');
+	//var socket = io.connect('http://localhost:8080');
+	var socket = io.connect('http://192.241.234.170:8080');
 
 	function getSessionId(){
 		var jsId = document.cookie.match(/user=[^;]+/);
@@ -48,11 +46,11 @@ $(function(){
 
 	session_timer = new Timer(180)
 
-	console.log(getSessionId())
+	
 
 
 	socket.on('end_', function(data){
-		console.log("we got end message" + data)
+		
 
 		$.ajax({
 			type: 'POST', url:'/session_closed'
@@ -73,11 +71,10 @@ $(function(){
 
 	socket.on('result_', function(data){
 
-		
 		counter = counter + 1
 		//appendToList(ab2str(data))
 		var decoded = $.parseJSON(ab2str(data))
-		console.log("got data" + decoded);
+		
 		if(decoded.tag === "POSITIVE"){
 			color = "blue"
 		}else if(decoded.tag === "NEGATIVE"){
@@ -108,44 +105,5 @@ $(function(){
 			$(".block-list li").first().remove();
 		}
 	}
-
-
-
-
-	/*$('form').on('submit', function(event){
-		console.log("submit!");
-		event.preventDefault();//prevent submit
-		var form = $(this);
-		var wordData = form.serialize();
-		console.log("We send server the keyword: " + wordData);
-
-		//transforms form data to URL-encoded notation
-		$.ajax({
-			type: 'GET', url: '/keyword', data: wordData
-		}).done(function(data){
-			//recently
-			console.log(data);//cleans up form text input fields
-		});
-	})
-	*/
-	/*
-	$(function(){
-		$('.block-list').on('click', 'a[data-block]', function(event){
-			if(!confirm('Are you sure ?')){
-				return false;
-			}
-
-			var target = $(event.currentTarget);//the link element that was clicked
-
-			$.ajax({
-				type:'DELETE', url: '/blocks/' + target.data('block')
-				//reads the block name from the link's data-block attribute.
-			}).done(function(){
-				target.parents('li').remove();
-
-			});
-		});
-	});
-*/
 
 });
