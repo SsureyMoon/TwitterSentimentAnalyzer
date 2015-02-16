@@ -28,7 +28,10 @@ import numpy as np
 
 json = import_simplejson()
 
-
+ckey = '9Bh86FuaqtY9kxWjKVfUDCUl6'
+csecret = 'uSYohydy2V3vHfSG191oCn1lroPvwQv6Pq6Ahq02r8Jc1uanRl'
+atoken = '134144530-DZAjQUMTVd1SQXBYDCHxodrfWupHKAqapG3OxHYF'
+asecret = 'HmBMfexJRNbdtth2SHwa37vNwzyyWb61SWl2fS1PwjihJ'
 
 
 

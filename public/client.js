@@ -16,11 +16,6 @@ $(function(){
 				})
 				clearInterval(setInt);
 				
-				/*
-				if(vaild===true){
-					valid = false
-					alert("session is expired!");
-				}*/
 
 			} else {
 				i = i + 1

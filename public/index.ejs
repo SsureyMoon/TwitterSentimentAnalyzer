@@ -7,9 +7,25 @@
 	<!--<link rel="stylesheet" href='./style.css'/>-->
 </head>
 <body>
+	<h2>
+		Real-time Twitter Sentiment Catcher
+	</h2>
 	<div>
-		<%-no_session%>/1
-		<%=message%>
+		<p>
+			<b>How to use:</b>
+			<ul>
+		 		<li>Enter one word (currently only support only one word) to the search box</li>
+		 		<li>This application will show graph of positive ratio(%) of real-time tweets about the keyword you entered</li>
+		 		<li>If you get <em>number of session limited</em>, please try again after one or two minnutes later</li>
+		 		<li>Even though you stay in this page without entering any keywords, the vaild session will be returned for other users in 2 minutes</li>
+		 	</ul>
+		</p>
+	</div>
+	<div>
+		<h4>
+			<%-no_session%>/1
+			<%=message%>
+		</h4>
 	</div>
 	<!--<h2>Real-time Twitter sentiment catcher.</h2>-->
 	<div class="form_view">
@@ -19,10 +35,8 @@
 				<input type="text" placeholder="Keyword" name="keyword"/>
 				<input type="submit" value="Submit"/>
 			</div>	
-			
 		</form>
 	</div>
-
 	
 
 	<script src="/socket.io/socket.io.js"></script>

@@ -31,38 +31,94 @@ sock_server.listen(PORT, HOST, function(socket){
 });
 
 
-var number_of_Session = 0
 
-var sessionID;
-
+var valid_session = new validSession(); //Globally only one session exists. should avoid global var
 
 
-var limit_session = function(request, response, next){
-
-	if(!request.session.connection){
-		if (number_of_Session === 0){
-			number_of_Session = number_of_Session + 1
-			response.cookie('user', request.sessionID);
+function validSession(){
+	this.sessionID  = null;
+	this.createValidSession = function(id, callback){
+		if(this.sessionID === null){
+			this.sessionID = id;
 			console.log("createing a new valid session.\n")
-			next();
 		} else {
-			console.log("invaild session. all vaild sessions are occupied.\n")
-			return response.render(__dirname +'/public/index.ejs', {"message": "number of session limited, please wait until the session is available", "no_session":number_of_Session})
+			console.log("Only one valid session can exist");
 		}
-	} else {
-		console.log("already valid session exist.\n")
-		next();
+		callback();
+ 	}
+
+ 	this.resetValidSession = function(){
+ 		this.sessionID = null;
+ 	}
+
+}
+
+var childProc = new pythonWrapper(); //Globally only one child proc exists. should avoid global var
+
+
+function pythonWrapper(){
+	this.child = null;
+
+	this.setCmd = function(keyword){
+		this.cmd = "python MachineLearningServer.py "+ PORT + " "+keyword;
+
+		console.log("Got the search keyword "+keyword);	
 	}
+	
+	this.runProc = function(){
+		try{
+			if(this.child === null){
+				this.child = exec(this.cmd, function(error, stdout, stderr){
+					if(error) console.log(error);
+				});
+				console.log("executing '"+ this.cmd +"'");
+			} else {
+				console.log("child process already exists")
+			}
+			
+		} catch(err) {
+			console.log("can't run")
+			console.log(err);
+		} 
+
+	}
+
+	this.terminateProc = function(){
+		try{
+			this.child.kill(signal='SIGTERM');
+			this.child = null;
+			console.log("end child process")
+		} catch(err){
+			console.log("no child process")
+		} 
+
+	}
+}
+
+
+var validSessionCheck = function(request, response, next){
+	
+	valid_session.createValidSession(request.sessionID, function(){
+		console.log("request.sessionID:"+request.sessionID)
+		console.log("valid_session.sessionID:"+valid_session.sessionID)
+		if(request.sessionID === valid_session.sessionID){
+			response.cookie('user', request.sessionID);
+			return next();
+		} else {
+			console.log("invalid session. all valid sessions are occupied.\n")
+			return response.render(__dirname +'/public/index.ejs', {"message": "number of session limited, please wait until the session is available", "no_session":1})
+		}
+	});
 }
 
 
 
 
 
-var sessions = session({
+/*var sessions = session({
 	cookie: {maxAge: null, secure: false},
 	secret: sessionSecret, name: "express.sid"
-});
+});*/
 
 function errorHandler(err, request, response, next) {
   res.status(500);
@@ -75,25 +131,26 @@ app.use(cookieParser(sessionSecret));
 app.use(bodyParser());
 app.use(errorHandler);
 
+app.use(session({
+	cookie: {maxAge: null, secure: false},
+	secret: sessionSecret, name: "express.sid"
+}));
 
 
-app.get('/', sessions, limit_session, function(request, response){
+app.get('/', validSessionCheck, function(request, response){
+//app.get('/', sessions, validSessionCheck, function(request, response){
 
 	request.session.connection = true
 
 	console.log("sessionID: ", request.sessionID)
-	console.log("number_of_Session: "+number_of_Session);
 	console.log("connection success.\n")
-	setTimeout(function() {number_of_Session = 0;
-		request.session.connection = false;
-		try{
-			io.sockets.emit('end_', "data");
-			child.kill(signal='SIGTERM');
-		} catch (e){
-			console.log("Node.js error:");
-			console.log(e);
-		}}, 1000*150);
-	return response.render(__dirname +'/public/index.ejs', {"message": "connection success", "no_session":number_of_Session})
+	
+	setTimeout(function() {
+		valid_session.resetValidSession();
+		childProc.terminateProc();
+	}, 1000*150); // auto
+
+	return response.render(__dirname +'/public/index.ejs', {"message": "connection success", "no_session":1})
 
 });
 
@@ -126,35 +183,31 @@ io.sockets.on('connection', function(socket){
 });
 
 
-app.post('/', parseUrlencoded, sessions, function(request, response){
+app.post('/', parseUrlencoded, validSessionCheck, function(request, response){
+//app.post('/', parseUrlencoded, sessions, validSessionCheck, function(request, response){
 
 	if(request.session.connection === true){
 		var keyword = request.body.keyword;
 		request.session.keyword = keyword;
-
-		console.log("Got the search keyword "+keyword);
-		var cmd = "python MachineLearningServer.py "+ PORT + " "+keyword;
-		console.log("executing '"+ cmd +"'");
-
-
-		child = exec(cmd, function(error, stdout, stderr){
-			if(error) console.log(error);
-		})
+		
+		childProc.terminateProc();
+		childProc.setCmd(keyword);
+		childProc.runProc();
 
 		response.redirect('/result/'+request.sessionID)
 	}
 	else{
-		return response.render(__dirname +'/public/index.ejs', {"message": "number of session limited, please wait until the session is available", "no_session":number_of_Session})
+		return response.render(__dirname +'/public/index.ejs', {"message": "number of session limited, please wait until the session is available", "no_session":1})
 	}
 
 
 });
 
-
-app.get('/result/:sessionID', sessions, function(request, response){
+app.get('/result/:sessionID', validSessionCheck, function(request, response){
+//app.get('/result/:sessionID', sessions, validSessionCheck, function(request, response){
 	var browserID = request.param('sessionID').trim();
 	if(browserID === request.sessionID){
-	return response.render(__dirname +'/public/result.ejs', {"keyword": request.session.keyword})
+		return response.render(__dirname +'/public/result.ejs', {"keyword": request.session.keyword})
 		//return response.sendfile(__dirname +'/public/result.html');
 	}
 	else {
@@ -169,13 +222,11 @@ app.get('*', function(request, response){
 
 })
 
-
-app.post('/session_closed', parseUrlencoded, sessions, function(request, response){
+app.post('/session_closed', parseUrlencoded, function(request, response){
+//app.post('/session_closed', parseUrlencoded, sessions, function(request, response){
 
 	console.log('session destroy request received');
-	if(number_of_Session>0){
-		number_of_Session = 0
-	}
+	valid_session.resetValidSession();
 
 	request.session.connection = false;
 	response.cookie('user', "expired");
@@ -188,12 +239,15 @@ app.post('/session_closed', parseUrlencoded, sessions, function(request, respons
 	});
 
 	setTimeout(function(){
-		child.kill(signal='SIGTERM');
+		childProc.terminateProc();
 		console.log("end child process")
 	}, 1000);
 
 	response.send("session destroyed");
 });
+
+
+
 
 
 
@@ -228,8 +282,8 @@ sock_server.on('connection', function(sock) {
 
 
 				setTimeout(function(){
-					child.kill(signal='SIGTERM');
-					console.log("end child process")
+					childProc.terminateProc();
+					
 				}, 1000);//in case a python app does not close by itself.
 			}
 		} catch (e){
